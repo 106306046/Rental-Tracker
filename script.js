@@ -38,7 +38,9 @@ addListingBtn.addEventListener('click', () => {
 // Fetch data from Google Sheets
 async function fetchListings() {
     try {
-        const response = await fetch(`${SHEET_API_URL}?action=read`);
+        const response = await fetch(`${SHEET_API_URL}?action=read`, {
+            mode: 'no-cors'
+        });
         const data = await response.json();
 
         if (data.status === 'success') {
@@ -157,6 +159,7 @@ async function deleteListing(url) {
 
     try {
         const response = await fetch(SHEET_API_URL, {
+            mode: 'no-cors',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -194,7 +197,9 @@ fetchInfoBtn.addEventListener('click', async () => {
         // Using a CORS proxy to fetch the website data
         const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
 
-        const response = await fetch(proxyUrl);
+        const response = await fetch(proxyUrl, {
+            mode: 'no-cors'
+        });
         const data = await response.json();
 
         if (data.contents) {
@@ -230,6 +235,7 @@ addListingForm.addEventListener('submit', async (event) => {
 
     try {
         const response = await fetch(SHEET_API_URL, {
+            mode: 'no-cors'
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -268,6 +274,7 @@ editListingForm.addEventListener('submit', async (event) => {
 
     try {
         const response = await fetch(SHEET_API_URL, {
+            mode: 'no-cors',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
