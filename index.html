@@ -1,161 +1,106 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-TW">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>租屋追蹤系統</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 1rem;
-            background: #f4f4f4;
-        }
-
-        .card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .card img {
-            max-width: 100%;
-            border-radius: 4px;
-        }
-
-        .card h3 {
-            margin: 0 0 0.5rem 0;
-        }
-
-        .card input,
-        .card select {
-            margin-top: 0.5rem;
-            width: 100%;
-        }
-
-        .actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .floating-button {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        #form-container {
-            display: none;
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-            position: fixed;
-            bottom: 80px;
-            right: 1rem;
-            width: 300px;
-        }
-
-        #form-container input,
-        #form-container button {
-            width: 100%;
-            margin-top: 0.5rem;
-        }
-    </style>
+    <title>租屋記錄管理系統</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <h1>租屋追蹤系統 v3</h1>
-    <div id="cards"></div>
+    <header>
+        <h1>租屋記錄管理系統</h1>
+    </header>
 
-    <div id="form-container">
-        <input type="text" id="urlInput" placeholder="貼上租屋網址" required>
-        <button onclick="submitUrl()">新增</button>
+    <main>
+        <div id="listings-container" class="listings-container">
+            <!-- Listings will be displayed here -->
+            <div class="loading">載入中...</div>
+        </div>
+    </main>
+
+    <!-- Add New Listing Button -->
+    <button id="add-listing-btn" class="add-listing-btn">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Add New Listing Modal -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>新增租屋記錄</h2>
+            <form id="add-listing-form">
+                <div class="form-group">
+                    <label for="url">URL (必填)</label>
+                    <input type="url" id="url" name="url" required>
+                    <button type="button" id="fetch-info-btn">取得網頁資訊</button>
+                </div>
+                <div class="form-group">
+                    <label for="title">標題</label>
+                    <input type="text" id="title" name="title">
+                </div>
+                <div class="form-group">
+                    <label for="image">圖片 URL</label>
+                    <input type="url" id="image" name="image">
+                </div>
+                <div class="form-group">
+                    <label for="contact">已聯繫</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="contact" name="contact">
+                        <label for="contact"></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reservedTime">預約時間</label>
+                    <input type="datetime-local" id="reservedTime" name="reservedTime">
+                </div>
+                <div class="form-group">
+                    <label for="result">結果</label>
+                    <select id="result" name="result">
+                        <option value="no">未決定</option>
+                        <option value="yes">已接受</option>
+                        <option value="reject">已拒絕</option>
+                    </select>
+                </div>
+                <button type="submit">提交</button>
+            </form>
+        </div>
     </div>
 
-    <button class="floating-button" onclick="toggleForm()">＋</button>
+    <!-- Edit Listing Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>編輯租屋記錄</h2>
+            <form id="edit-listing-form">
+                <input type="hidden" id="edit-url" name="url">
+                <div class="form-group">
+                    <label for="edit-contact">已聯繫</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="edit-contact" name="contact">
+                        <label for="edit-contact"></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-reservedTime">預約時間</label>
+                    <input type="datetime-local" id="edit-reservedTime" name="reservedTime">
+                </div>
+                <div class="form-group">
+                    <label for="edit-result">結果</label>
+                    <select id="edit-result" name="result">
+                        <option value="no">未決定</option>
+                        <option value="yes">已接受</option>
+                        <option value="reject">已拒絕</option>
+                    </select>
+                </div>
+                <button type="submit">更新</button>
+            </form>
+        </div>
+    </div>
 
-    <script>
-        const SHEET_API = 'https://script.google.com/macros/s/AKfycbwUQq6wvUNTEwhfJPp9JrdguuJx3tstfYKSUVQb_hT1GgZcKxd5fwxC8NtxfNyeAnhC/exec'
-        async function fetchData() {
-            const res = await fetch(SHEET_API, {
-                mode: 'no-cors'
-            });
-            const data = await res.json();
-            console.log('response:')
-            console.log(data)
-            const container = document.getElementById('cards');
-            container.innerHTML = '';
-            data.filter(entry => entry.Result !== 'delete').forEach(entry => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-          <h3>${entry.Title}</h3>
-          <a href="${entry.URL}" target="_blank">${entry.URL}</a><br>
-          <img src="${entry.Image}" alt="Image"/>
-          <div class="actions">
-            <label>已聯繫？ <input type="checkbox" ${entry.Contact === true || entry.Contact === 'TRUE' ? 'checked' : ''} onchange="updateField(${entry.rowId}, 'Contact', this.checked)"></label>
-          </div>
-          <div class="actions">
-            <label>預約時間 <input type="datetime-local" value="${entry.ReservedTime || ''}" onchange="updateField(${entry.rowId}, 'ReservedTime', this.value)"></label>
-          </div>
-          <div class="actions">
-            <label>結果 <select onchange="updateField(${entry.rowId}, 'Result', this.value)">
-              <option value="" ${entry.Result === '' ? 'selected' : ''}>未定</option>
-              <option value="success" ${entry.Result === 'success' ? 'selected' : ''}>成功</option>
-              <option value="fail" ${entry.Result === 'fail' ? 'selected' : ''}>失敗</option>
-            </select></label>
-          </div>
-          <button onclick="updateField(${entry.rowId}, 'Result', 'delete')">🗑️ 刪除</button>
-        `;
-                container.appendChild(card);
-            });
-        }
-
-        async function updateField(rowId, field, value) {
-            await fetch(SHEET_API, {
-                mode: 'no-cors',
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mode: 'update', rowId, field, value })
-            });
-            fetchData();
-        }
-
-        function toggleForm() {
-            const form = document.getElementById('form-container');
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        }
-
-        async function submitUrl() {
-            const url = document.getElementById('urlInput').value;
-            if (!url) return;
-            await fetch(SHEET_API, {
-                mode: 'no-cors',
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mode: 'create', url })
-            });
-            document.getElementById('urlInput').value = '';
-            toggleForm();
-            fetchData();
-        }
-
-        fetchData();
-    </script>
+    <script src="script.js"></script>
 </body>
 
 </html>
