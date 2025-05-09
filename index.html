@@ -89,8 +89,7 @@
     <button class="floating-button" onclick="toggleForm()">＋</button>
 
     <script>
-        const SHEET_API = 'https://script.google.com/macros/s/AKfycbzTwLvAwbCvnBlA-rq1lrCwP4gdVcua80LIL3j-1Be3g99hje3ImKpoVmPqDSfJ6dgD/exec';
-
+        const SHEET_API = 'https://script.google.com/macros/s/AKfycbxahwVjvsLGVCbOG5bqP1U6WWBISYpX98_oN7H2NmWe-2SDld9c3PJskGKw39vevVJp/exec'
         async function fetchData() {
             const res = await fetch(SHEET_API);
             const data = await res.json();
