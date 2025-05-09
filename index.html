@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>租屋追蹤系統 v2</title>
+    <title>租屋追蹤系統</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -78,7 +78,7 @@
 </head>
 
 <body>
-    <h1>租屋追蹤系統</h1>
+    <h1>租屋追蹤系統 v3</h1>
     <div id="cards"></div>
 
     <div id="form-container">
@@ -95,6 +95,8 @@
                 mode: 'no-cors'
             });
             const data = await res.json();
+            console.log('response:')
+            console.log(data)
             const container = document.getElementById('cards');
             container.innerHTML = '';
             data.filter(entry => entry.Result !== 'delete').forEach(entry => {
