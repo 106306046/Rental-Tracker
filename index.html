@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>租屋追蹤系統</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 1rem;
+            background: #f4f4f4;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .card img {
+            max-width: 100%;
+            border-radius: 4px;
+        }
+
+        .card h3 {
+            margin: 0 0 0.5rem 0;
+        }
+
+        .card input,
+        .card select {
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .floating-button {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        #form-container {
+            display: none;
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            bottom: 80px;
+            right: 1rem;
+            width: 300px;
+        }
+
+        #form-container input,
+        #form-container button {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>租屋追蹤系統</h1>
+    <div id="cards"></div>
+
+    <div id="form-container">
+        <input type="text" id="urlInput" placeholder="貼上租屋網址" required>
+        <button onclick="submitUrl()">新增</button>
+    </div>
+
+    <button class="floating-button" onclick="toggleForm()">＋</button>
+
+    <script>
+        const SHEET_API = 'https://script.google.com/macros/s/AKfycbzTwLvAwbCvnBlA-rq1lrCwP4gdVcua80LIL3j-1Be3g99hje3ImKpoVmPqDSfJ6dgD/exec';
+
+        async function fetchData() {
+            const res = await fetch(SHEET_API);
+            const data = await res.json();
+            const container = document.getElementById('cards');
+            container.innerHTML = '';
+            data.filter(entry => entry.Result !== 'delete').forEach(entry => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+          <h3>${entry.Title}</h3>
+          <a href="${entry.URL}" target="_blank">${entry.URL}</a><br>
+          <img src="${entry.Image}" alt="Image"/>
+          <div class="actions">
+            <label>已聯繫？ <input type="checkbox" ${entry.Contact === true || entry.Contact === 'TRUE' ? 'checked' : ''} onchange="updateField(${entry.rowId}, 'Contact', this.checked)"></label>
+          </div>
+          <div class="actions">
+            <label>預約時間 <input type="datetime-local" value="${entry.ReservedTime || ''}" onchange="updateField(${entry.rowId}, 'ReservedTime', this.value)"></label>
+          </div>
+          <div class="actions">
+            <label>結果 <select onchange="updateField(${entry.rowId}, 'Result', this.value)">
+              <option value="" ${entry.Result === '' ? 'selected' : ''}>未定</option>
+              <option value="success" ${entry.Result === 'success' ? 'selected' : ''}>成功</option>
+              <option value="fail" ${entry.Result === 'fail' ? 'selected' : ''}>失敗</option>
+            </select></label>
+          </div>
+          <button onclick="updateField(${entry.rowId}, 'Result', 'delete')">🗑️ 刪除</button>
+        `;
+                container.appendChild(card);
+            });
+        }
+
+        async function updateField(rowId, field, value) {
+            await fetch(SHEET_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: 'update', rowId, field, value })
+            });
+            fetchData();
+        }
+
+        function toggleForm() {
+            const form = document.getElementById('form-container');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function submitUrl() {
+            const url = document.getElementById('urlInput').value;
+            if (!url) return;
+            await fetch(SHEET_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: 'create', url })
+            });
+            document.getElementById('urlInput').value = '';
+            toggleForm();
+            fetchData();
+        }
+
+        fetchData();
+    </script>
+</body>
+
+</html>
