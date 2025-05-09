@@ -235,7 +235,7 @@ addListingForm.addEventListener('submit', async (event) => {
 
     try {
         const response = await fetch(SHEET_API_URL, {
-            mode: 'no-cors'
+            mode: 'no-cors',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
