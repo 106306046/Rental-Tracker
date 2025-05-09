@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>租屋追蹤系統</title>
+    <title>租屋追蹤系統 v2</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -91,7 +91,9 @@
     <script>
         const SHEET_API = 'https://script.google.com/macros/s/AKfycbxahwVjvsLGVCbOG5bqP1U6WWBISYpX98_oN7H2NmWe-2SDld9c3PJskGKw39vevVJp/exec'
         async function fetchData() {
-            const res = await fetch(SHEET_API);
+            const res = await fetch(SHEET_API, {
+                mode: 'no-cors'
+            });
             const data = await res.json();
             const container = document.getElementById('cards');
             container.innerHTML = '';
@@ -123,6 +125,7 @@
 
         async function updateField(rowId, field, value) {
             await fetch(SHEET_API, {
+                mode: 'no-cors',
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ mode: 'update', rowId, field, value })
@@ -139,6 +142,7 @@
             const url = document.getElementById('urlInput').value;
             if (!url) return;
             await fetch(SHEET_API, {
+                mode: 'no-cors',
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ mode: 'create', url })
